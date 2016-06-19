@@ -48,9 +48,49 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 					ret
 				.endif
 				
+				mov eax, 0
+				mov ebx, 0
+				mov ecx, 0
+				mov edx, 0
+				
+				mov contador_a, 0
+				.while contador_a < 12
+					mov contador_b, 0
+					.while contador_b < 7
+						mov al, contador_a
+						mov dl, 7
+						mul dl
+						add al, contador_b
+						
+						mov cl, al ;index
+						
+						mov dl, 2
+						mul dl
+						mov bl, al ;index * 2
+						
+						mov esi, offset buffer ;source
+						add esi, byte_inicio
+						add esi, ebx
+						.if contador_a > 5
+							add esi, 10
+						.endif
+						
+						mov edi, offset buffer_linha ;dest
+						;invoke MessageBox, hWin, addr erro, addr erro, MB_OK
+						;invoke SetDlgItemInt,hWin, CAMPO, ecx, FALSE
+						add edi, ecx ;index
+						
+						mov ecx, 1
+						rep movsb
+						
+						inc contador_b
+					.endw
+					inc contador_a
+				.endw
 				
 				
-				
+				;invoke MessageBox, hWin, addr erro_nao_bmp, addr erro, MB_OK
+				;invoke SetDlgItemInt,hWin, CAMPO, buffer_linha[45], FALSE
 				
 				invoke CloseHandle, ponteiro_imagem
 			.endif
