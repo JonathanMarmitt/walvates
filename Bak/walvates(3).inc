@@ -56,4 +56,4 @@ bar_9 db 116 ;1110100b
 
 ; prototipos
 Proc_Evento PROTO :HWND,:UINT,:WPARAM,:LPARAM
-getBarcode  PROTO :UINT
+getBarcode     PROTO :UINT, :UINT, :CHAR

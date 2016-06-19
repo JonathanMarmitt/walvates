@@ -37,7 +37,7 @@ BOTAO EQU 1001
 CAMPO EQU 1002
 
 .const
-path db "C:\RadASM\Masm\Projects\walvates\barcodes\7898112512114.bmp",0
+path db "C:\RadASM\Masm\Projects\walvates\barcodes\7590002025314.bmp",0
 erro db "Erro",0
 erro_nao_bmp db "Arquivo enviado não é .bmp!",0
 
@@ -56,3 +56,4 @@ bar_9 db 116 ;1110100b
 
 ; prototipos
 Proc_Evento PROTO :HWND,:UINT,:WPARAM,:LPARAM
+getBarcode  PROTO :UINT,:HWND
