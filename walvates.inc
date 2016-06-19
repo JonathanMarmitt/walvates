@@ -21,7 +21,7 @@ bytes_por_numero db 7
 
 buffer_linha db 84 dup (0)
 buffer db 13816 dup(0) 
-buffer_lido db 7 dup(0)
+buffer_lido db 14 dup(0)
 
 teste1 db 40 dup('A')
 teste2 db 20 dup(0)
