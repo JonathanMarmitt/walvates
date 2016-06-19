@@ -107,14 +107,35 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 						mul dl
 						add al, contador_b
 						
-						;mov bl, al ;index
-						
 						.if	contador_a == 0 || contador_a == 2 || contador_a == 4
 							; logica 1
+							.if contador_b > 0
+								rol bl, 1
+							.endif
 							
+							mov cl, bl ;guardando valor
+							mov bl, al ;recuperando indice
+							.if buffer_linha[bx] == 255
+								mov bl, cl
+								add bl, 1
+							.else
+								mov bl, cl
+								add bl, 0
+							.endif
 						.elseif contador_a == 1 || contador_a == 3 || contador_a == 5
 							; logica 2
-							
+						
+							mov cl, bl ;guardando valor
+							mov bl, al ;recuperando indice
+							.if buffer_linha[bx] == 255
+								mov bl, cl
+								add bl, 0
+								ror bl, 1
+							.else
+								mov bl, cl
+								add bl, 1
+								ror bl, 1
+							.endif
 						.elseif  contador_a > 5
 							;.if contador_a == 6					
 								;invoke SetDlgItemInt,hWin, CAMPO, al, FALSE
@@ -138,6 +159,10 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 						.endif
 						inc contador_b
 					.endw
+					
+					.if contador_a == 1 || contador_a == 3 || contador_a == 5
+						ror bl, 1
+					.endif
 					
 					mov ax, 0
 					mov al, bl
@@ -176,16 +201,10 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 				.endw
 				
 				mov buffer_lido[0], '7'
-				mov buffer_lido[1], 'A'
-				mov buffer_lido[2], 'A'
-				mov buffer_lido[3], 'A'
-				mov buffer_lido[4], 'A'
-				mov buffer_lido[5], 'A'
-				mov buffer_lido[6], 'A'
-				
+
 				invoke SetDlgItemText, hWin, 1003, addr buffer_lido
 				;invoke MessageBox, hWin, addr erro_nao_bmp, addr erro, MB_OK
-				invoke SetDlgItemInt,hWin, CAMPO, buffer_lido[7], FALSE
+				;invoke SetDlgItemInt,hWin, CAMPO, bl, FALSE
 				
 				invoke CloseHandle, ponteiro_imagem
 			.endif
