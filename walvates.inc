@@ -2,10 +2,15 @@
 include windows.inc
 include kernel32.inc
 include user32.inc
+include	comdlg32.inc
+include	Comctl32.inc
 
 ; Bibliotecas funcoes WIN32
 includelib kernel32.lib
 includelib user32.lib
+includelib Comctl32.lib
+includelib comdlg32.lib
+
 
 ; Variável para passagem de ponteiro da janela
 .data
@@ -33,13 +38,26 @@ contador_b db ?
 valor db ?
 
 JANELA_PRINCIPAL EQU 1000
-BOTAO EQU 1001
-CAMPO EQU 1002
+;BOTAO EQU 1001
+;CAMPO EQU 1002
+NOME_ARQUIVO EQU 1003
+UPLOAD EQU 1004
+CODIGO_BARRAS EQU 1005
+
+;para o upload do arquivo
+ClassName			db 'MCLASS',0
+AddFilter   			db "(*.bmp)", 0, "*.bmp" ,0 
+            			db "All Files (*.*)",0,"*.*",0,0
+AddTitle    			db "Selecione codigo de barra", 0
+hInstance			dd		?
+ofn   				OPENFILENAME <?>
+FileN   			db 260 dup(?)
 
 .const
-path db "C:\RadASM\Masm\Projects\walvates\barcodes\7590002025314.bmp",0
 erro db "Erro",0
+erro_ler db "Erro ao ler o arquivo enviado. Verifique se é um arquivo válido",0
 erro_nao_bmp db "Arquivo enviado não é .bmp!",0
+erro_abrir db "Ocorreu um erro ao abrir o arquivo. Tente novamente",0
 
 ;valor de cada binario do codigo de barras
 bar_0 db 114 ;1110010b

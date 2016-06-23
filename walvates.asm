@@ -9,6 +9,7 @@ include walvates.inc
 start:
 invoke GetModuleHandle,NULL ;pega o ponteiro deste programa, retorna em eax
 mov    Inst_principal,eax
+invoke InitCommonControls
 invoke DialogBoxParam, Inst_principal,JANELA_PRINCIPAL,NULL,addr Proc_Evento,NULL
 invoke ExitProcess,0
 
@@ -31,18 +32,44 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 		and eax,0FFFFh
 		
 		.if edx==BN_CLICKED
-			.if eax == BOTAO			
-				invoke CreateFile,addr path, GENERIC_READ or GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
+			.if eax == UPLOAD	
+				;ver se da pra fazer uma funcao pra upload
+				invoke RtlZeroMemory,offset ofn,sizeof ofn
+				mov  ofn.lStructSize,SIZEOF ofn
+				push hWin
+				pop  ofn.hwndOwner
+				push hInstance
+				pop  ofn.hInstance
+				mov  ofn.lpstrFilter, offset AddFilter
+				mov  ofn.lpstrFile, offset FileN
+				mov  ofn.nMaxFile, 260
+				mov  ofn.Flags, OFN_FILEMUSTEXIST or OFN_PATHMUSTEXIST or OFN_LONGNAMES or OFN_EXPLORER or OFN_HIDEREADONLY
+				mov  ofn.lpstrTitle, offset AddTitle
 				
-				.if eax== INVALID_HANDLE_VALUE
-					invoke MessageBox, hWin, addr erro, addr erro, MB_OK
+				invoke GetOpenFileName, offset ofn
+				;se conseguiu abrir o arquivo
+				.if eax==TRUE
+					invoke SetDlgItemText, hWin, NOME_ARQUIVO, offset FileN
+					
+					invoke CreateFile,addr FileN, GENERIC_READ or GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
+				
+					.if eax== INVALID_HANDLE_VALUE
+						invoke MessageBox, hWin, addr erro_ler, addr erro, MB_OK
+						ret
+					.endif
+					
+					invoke getBarcode, eax, hWin
+					.if ebx != 1 ;so prossegue se nao der erro
+						invoke SetDlgItemText, hWin, CODIGO_BARRAS, eax
+						;incluir aqui logica para procurar no arquivo
+					.else
+						mov eax, 0
+						invoke SetDlgItemText,hWin, CODIGO_BARRAS, eax
+					.endif
+				.else
+					invoke MessageBox, hWin, addr erro_abrir, addr erro, MB_OK
 					ret
 				.endif
-				
-				invoke getBarcode, eax, hWin
-				
-				invoke SetDlgItemText, hWin, 1003, eax
-
 			.endif
 		.endif
 	;Evento de fechamento de janela
@@ -63,6 +90,7 @@ getBarcode proc ponteiro:UINT, window:HWND
 	
 	.if buffer[0] != 'B' || buffer[1] != 'M'
 		invoke MessageBox, window, addr erro_nao_bmp, addr erro, MB_OK
+		mov ebx, 1 ;sinal de erro
 		ret
 	.endif
 
@@ -94,8 +122,6 @@ getBarcode proc ponteiro:UINT, window:HWND
 			.endif
 			
 			mov edi, offset buffer_linha ;dest
-			;invoke MessageBox, hWin, addr erro, addr erro, MB_OK
-			;invoke SetDlgItemInt,hWin, CAMPO, ecx, FALSE
 			add edi, ecx ;index
 			
 			mov ecx, 1
@@ -209,8 +235,6 @@ getBarcode proc ponteiro:UINT, window:HWND
 	
 	mov buffer_lido[0], '7'
 
-	;invoke MessageBox, hWin, addr erro_nao_bmp, addr erro, MB_OK
-	;invoke SetDlgItemInt,hWin, CAMPO, bl, FALSE
 	invoke CloseHandle, ponteiro_imagem
 	
 	mov eax, offset buffer_lido
