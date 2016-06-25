@@ -11,38 +11,40 @@ includelib user32.lib
 includelib Comctl32.lib
 includelib comdlg32.lib
 
-
 ; Variável para passagem de ponteiro da janela
 .data
 Inst_principal dd ?
 ponteiro_imagem dd ?
-;buffer db [128]
-;buffer_linha dw [91] ;largura
-;largura_linha db 161
 byte_inicio dd 13418        ;primeira parte de 6 digitos
 byte_inicio_parte2 dw 13512 ;segunda parte de 6 digitos
 tamanho db 13
 bytes_por_numero db 7
-
 buffer_linha db 84 dup (0)
 buffer db 13816 dup(0) 
 buffer_lido db 14 dup(0)
-
-teste1 db 40 dup('A')
-teste2 db 20 dup(0)
-tes db 7 dup(0)
-
 bytes_read dw ?
 contador_a db ?
 contador_b db ?
 valor db ?
 
+;parte Leandro
+retorno_arquivo db 2263 dup(0)
+ponteiro_produtos dd ?
+bytes_escritos db ?
+buffer_inf_produtos db 2263 dup(0)
+contador dw 10
+contador1 dw 10
+Array db 14 dup(0)
+Array_Arquivo db 14 dup(0)
+
 JANELA_PRINCIPAL EQU 1000
-;BOTAO EQU 1001
-;CAMPO EQU 1002
 NOME_ARQUIVO EQU 1003
 UPLOAD EQU 1004
 CODIGO_BARRAS EQU 1005
+
+CAMPO_PRODUTO EQU 1001
+CAMPO_MARCA EQU 1002
+CAMPO_VALOR EQU 1007
 
 ;para o upload do arquivo
 ClassName			db 'MCLASS',0
@@ -56,8 +58,14 @@ FileN   			db 260 dup(?)
 .const
 erro db "Erro",0
 erro_ler db "Erro ao ler o arquivo enviado. Verifique se é um arquivo válido",0
+erro_lista db "Erro ao ler lista de produtos",0
 erro_nao_bmp db "Arquivo enviado não é .bmp!",0
 erro_abrir db "Ocorreu um erro ao abrir o arquivo. Tente novamente",0
+
+;Leandro
+MEMORYSIZE EQU 65535
+NomeArquivo db "C:\RadASM\Masm\Projects\walvates\listaprodutos.txt",0
+ErroProduto db "Não achou o produto",0
 
 ;valor de cada binario do codigo de barras
 bar_0 db 114 ;1110010b
@@ -75,3 +83,4 @@ bar_9 db 116 ;1110100b
 ; prototipos
 Proc_Evento PROTO :HWND,:UINT,:WPARAM,:LPARAM
 getBarcode  PROTO :UINT,:HWND
+leProduto PROTO :HWND

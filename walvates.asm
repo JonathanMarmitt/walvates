@@ -3,6 +3,7 @@
 .model flat, stdcall ;Modelo de memória a ser usado
 
 include walvates.inc
+;include leProduto.inc
 
 ; Inicio do código
 .code
@@ -59,9 +60,13 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 					.endif
 					
 					invoke getBarcode, eax, hWin
+					
 					.if ebx != 1 ;so prossegue se nao der erro
 						invoke SetDlgItemText, hWin, CODIGO_BARRAS, eax
 						;incluir aqui logica para procurar no arquivo
+						
+						;internamente, leProduto le no buffer_lido
+						invoke leProduto, hWin
 					.else
 						mov eax, 0
 						invoke SetDlgItemText,hWin, CODIGO_BARRAS, eax
@@ -235,12 +240,169 @@ getBarcode proc ponteiro:UINT, window:HWND
 	
 	mov buffer_lido[0], '7'
 
-	invoke CloseHandle, ponteiro_imagem
+	invoke CloseHandle, ponteiro
 	
 	mov eax, offset buffer_lido
 	
 	ret 
 getBarcode endp
+
+leProduto proc window:HWND
+	invoke CreateFile,addr NomeArquivo,GENERIC_READ or GENERIC_WRITE,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL
+
+	.if eax == INVALID_HANDLE_VALUE
+		invoke MessageBox, window, addr erro_lista, addr erro, MB_OK
+		ret
+	.endif	
+	
+	mov ponteiro_produtos, eax
+    invoke ReadFile,ponteiro_produtos, addr retorno_arquivo, sizeof retorno_arquivo, addr bytes_escritos, NULL
+	
+	;Inicia o contador			
+	mov bx, 0
+	
+	Inicio_Codigo:
+	mov bx, contador
+	;Chega no primeiro codigo 
+	.while bx < 2262
+		.if retorno_arquivo[bx] == 13	
+		;invoke SetDlgItemInt,hWin, 1006, bx, FALSE
+		jmp continua
+		.endif
+		add bx, 1
+	.endw	
+	jmp mensagem_nao_encontrou
+					
+	;Ajusta para o inicio do codigo de barras			
+	continua:
+	mov contador, bx			
+	mov contador1, 0	
+	add bx, 2
+
+	;pega o codigo do produto
+	.while retorno_arquivo[bx] != 9
+		mov al, retorno_arquivo[bx]
+		add bx, 1
+		mov contador, bx
+		
+		mov bx, contador1
+		mov Array_Arquivo[bx] , al
+		add bx, 1
+		mov contador1, bx
+	
+		mov bx, contador
+	.endw	
+	mov bx, contador
+	mov al, retorno_arquivo[bx]
+	mov bx, contador1
+	
+	
+	mov bx, 0		
+	.while bx < 14
+		mov ah, Array_Arquivo[bx]
+		.if ah == buffer_lido[bx] ;Array[bx] FIXME?
+		add bx, 1
+		.elseif
+		jmp diferente
+		.endif
+	.endw
+			
+			
+	jmp pula_diferente			
+	diferente:
+	jmp Inicio_Codigo
+	pula_diferente:
+	
+	
+	;reseta o buffer_inf_produtos_inf_produtos_inf_produtos
+	mov bx, 0
+	.while bx < 40
+		mov buffer_inf_produtos[bx],32
+		add bx, 1
+	.endw
+	mov bx, contador
+	add bx, 1
+	mov contador, bx
+	mov contador1, 0	
+	
+	;pega o nome do produto
+	.while retorno_arquivo[bx] != 9
+		mov bx, contador
+		mov al, retorno_arquivo[bx]
+		add bx, 1
+		mov contador, bx
+		
+		mov bx, contador1
+		mov buffer_inf_produtos[bx] , al
+		add bx, 1
+		mov contador1, bx
+	
+		mov bx, contador
+	.endw	
+	invoke SetDlgItemText,window, CAMPO_PRODUTO, addr buffer_inf_produtos	
+	
+	
+	;reseta o buffer_inf_produtos_inf_produtos
+	mov bx, 0
+	.while bx < 40
+		mov buffer_inf_produtos[bx],32
+		add bx, 1
+	.endw
+	
+	mov bx, contador
+	add bx, 1
+	mov contador1, 0	
+	;pega a marca do produto
+	.while retorno_arquivo[bx] != 9
+		mov al, retorno_arquivo[bx]
+		add bx, 1
+		mov contador, bx
+		
+		mov bx, contador1
+		mov buffer_inf_produtos[bx] , al
+		add bx, 1
+		mov contador1, bx
+	
+		mov bx, contador
+	.endw	
+	invoke SetDlgItemText,window, CAMPO_MARCA, addr buffer_inf_produtos	
+			
+	;reseta o buffer_inf_produtos
+	mov bx, 0
+	.while bx < 40
+		mov buffer_inf_produtos[bx],32
+		add bx, 1
+	.endw
+	
+	mov bx, contador
+	add bx, 1
+	mov contador1, 0	
+
+	;pega o valor do produto
+	.while retorno_arquivo[bx] != 13
+		mov al, retorno_arquivo[bx]
+		add bx, 1
+		mov contador, bx
+		
+		mov bx, contador1
+		mov buffer_inf_produtos[bx] , al
+		add bx, 1
+		mov contador1, bx
+	
+		mov bx, contador
+	.endw	
+	invoke SetDlgItemText,window, CAMPO_VALOR, addr buffer_inf_produtos
+	
+	invoke CloseHandle, ponteiro_produtos
+					
+	jmp fim	
+	mensagem_nao_encontrou:
+	invoke SetDlgItemText,window, CAMPO_PRODUTO, addr ErroProduto	
+	fim:
+	
+	mov eax, 1 ; o que vai retornar?
+	ret
+leProduto endp
 
 ;fim do código
 end start
