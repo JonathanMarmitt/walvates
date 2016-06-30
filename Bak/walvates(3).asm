@@ -86,10 +86,11 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 					;pega o preco
 					invoke GetDlgItemText,hWin, CAMPO_VALOR, addr Array, sizeof Array
 					
-					;junta o nome + preco
+					;junta o nome + preco + conteudo
+					invoke lstrcat, addr buffer_linha, addr preco_linha
 					invoke lstrcat, addr buffer_linha, addr Array
 					invoke lstrcat, addr buffer_linha, addr final_linha
-					invoke lstrcat, addr buffer, addr buffer_linha			
+					invoke lstrcat, addr buffer,       addr buffer_linha
 					
 					;joga nos itens
 					invoke SetDlgItemText,hWin, CAMPO_ITENS, addr buffer
@@ -101,14 +102,18 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 					invoke SetDlgItemText, hWin, CAMPO_MARCA,   addr buffer_vazio
 					invoke SetDlgItemText, hWin, CAMPO_VALOR,   addr buffer_vazio
 					
+					invoke getValorDecimal ;joga em eax o valor do produto atual em decimal
+					
+					add total, eax ;soma com o total
+					
+					;transforma o total em um numero com virgula
+					invoke getTotal
+					
+					;invoke SetDlgItemInt, hWin, CAMPO_TOTAL, total, FALSE
+					invoke SetDlgItemText, hWin, CAMPO_TOTAL, addr array_total					
 				.else
 					invoke MessageBox, hWin, addr erro_adicionar, addr erro, MB_OK	
 				.endif
-				
-				
-				
-				
-				
 			.endif
 		.endif
 	;Evento de fechamento de janela
@@ -439,6 +444,85 @@ leProduto proc window:HWND
 	mov eax, 1 ; o que vai retornar?
 	ret
 leProduto endp
+
+getValorDecimal proc
+	
+	;calculo do total
+	mov eax,0
+	mov ebx,0
+	mov ecx,0
+	mov edx,0
+	.if Array[2] == ','
+		; numero xx,xx
+		mov al, Array[0]
+		mov bl, Array[1]
+		mov cl, Array[3]
+		mov dl, Array[4]
+		sub al, 48
+	.elseif Array[1] == ','
+		mov al, 0
+		mov bl, Array[0]
+		mov cl, Array[2]
+		mov dl, Array[3]
+	.endif
+	sub bl, 48
+	sub cl, 48
+	sub dl, 48
+	
+	mov digito1, eax
+	mov digito2, ebx
+	mov digito3, ecx
+	mov digito4, edx
+	
+	;parte baixa
+	mov eax, digito3
+	mov edx, 10
+	mul edx
+	add eax, digito4
+	mov parte_baixa, eax
+	
+	;parte alta
+	mov eax, digito2
+	mov edx, 100
+	mul edx
+	mov parte_alta, eax
+	
+	mov eax, digito1
+	mov edx, 1000
+	mul edx
+	add parte_alta, eax
+	
+	mov eax, parte_baixa
+	add eax, parte_alta
+	
+	ret
+getValorDecimal endp
+
+getTotal proc
+	mov eax,0
+	
+	.if total < 1000 ;3
+		mov array_total[0], '0'
+		mov array_total[1], ','
+		mov array_total[2], '0'
+		mov array_total[3], '0'
+	.elseif total < 1000 ;4
+		mov array_total[0], '0'
+		mov array_total[1], '0'
+		mov array_total[2], ','
+		mov array_total[3], '0'
+		mov array_total[4], '0'
+	.else ;5
+		mov array_total[0], '0'
+		mov array_total[1], '0'
+		mov array_total[2], '0'
+		mov array_total[3], ','
+		mov array_total[4], '0'
+		mov array_total[5], '0'
+	.endif
+	
+	ret
+getTotal endp
 
 ;fim do código
 end start

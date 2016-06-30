@@ -37,7 +37,17 @@ contador1 dw 10
 Array db 14 dup(0)
 Array_Arquivo db 14 dup(0)
 
-final_linha db 13,10,0
+preco_linha db 'R$',0
+final_linha db 9,13,10,0
+buffer_vazio db 0
+digito1 dd ?
+digito2 dd ?
+digito3 dd ?
+digito4 dd ?
+digito5 dd ?
+parte_baixa dd ?
+parte_alta dd ?
+total dd 0
 
 JANELA_PRINCIPAL EQU 1000
 NOME_ARQUIVO EQU 1003
