@@ -75,6 +75,35 @@ Proc_Evento proc hWin:HWND,uMsg:UINT,wParam:WPARAM,lParam:LPARAM
 					invoke MessageBox, hWin, addr erro_abrir, addr erro, MB_OK
 					ret
 				.endif
+			.elseif eax==ADICIONAR
+				;adiciona um produto na lista de itens
+				invoke GetDlgItemText, hWin, CAMPO_PRODUTO, addr buffer_linha, sizeof buffer_linha
+				
+				.if eax > 0
+					;recupera a informacao da lista
+					invoke GetDlgItemText, hWin, CAMPO_ITENS, addr buffer, sizeof buffer
+					
+					;pega o preco
+					invoke GetDlgItemText,hWin, CAMPO_VALOR, addr Array, sizeof Array
+					
+					;junta o nome + preco
+					invoke lstrcat, addr buffer_linha, addr Array
+					invoke lstrcat, addr buffer_linha, addr final_linha
+					invoke lstrcat, addr buffer, addr buffer_linha			
+					
+					;joga nos itens
+					invoke SetDlgItemText,hWin, CAMPO_ITENS, addr buffer
+					
+					;limpa os campos
+					invoke SetDlgItemText, hWin, NOME_ARQUIVO,  addr buffer_vazio
+					invoke SetDlgItemText, hWin, CODIGO_BARRAS, addr buffer_vazio
+					invoke SetDlgItemText, hWin, CAMPO_PRODUTO, addr buffer_vazio
+					invoke SetDlgItemText, hWin, CAMPO_MARCA,   addr buffer_vazio
+					invoke SetDlgItemText, hWin, CAMPO_VALOR,   addr buffer_vazio
+					
+				.else
+					invoke MessageBox, hWin, addr erro_adicionar, addr erro, MB_OK	
+				.endif
 			.endif
 		.endif
 	;Evento de fechamento de janela
@@ -240,7 +269,7 @@ getBarcode proc ponteiro:UINT, window:HWND
 	
 	mov buffer_lido[0], '7'
 
-	invoke CloseHandle, ponteiro_imagem
+	invoke CloseHandle, ponteiro
 	
 	mov eax, offset buffer_lido
 	
@@ -248,6 +277,8 @@ getBarcode proc ponteiro:UINT, window:HWND
 getBarcode endp
 
 leProduto proc window:HWND
+	mov contador, 0
+	
 	invoke CreateFile,addr NomeArquivo,GENERIC_READ or GENERIC_WRITE,0,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL
 
 	.if eax == INVALID_HANDLE_VALUE
@@ -393,7 +424,7 @@ leProduto proc window:HWND
 	.endw	
 	invoke SetDlgItemText,window, CAMPO_VALOR, addr buffer_inf_produtos
 	
-	;invoke CloseHandle, ponteiro_produtos
+	invoke CloseHandle, ponteiro_produtos
 					
 	jmp fim	
 	mensagem_nao_encontrou:

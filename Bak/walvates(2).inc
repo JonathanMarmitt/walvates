@@ -37,6 +37,8 @@ contador1 dw 10
 Array db 14 dup(0)
 Array_Arquivo db 14 dup(0)
 
+final_linha db 13,10,0
+
 JANELA_PRINCIPAL EQU 1000
 NOME_ARQUIVO EQU 1003
 UPLOAD EQU 1004
@@ -45,6 +47,10 @@ CODIGO_BARRAS EQU 1005
 CAMPO_PRODUTO EQU 1001
 CAMPO_MARCA EQU 1002
 CAMPO_VALOR EQU 1007
+
+ADICIONAR EQU 1012
+CAMPO_ITENS EQU 1011
+CAMPO_TOTAL EQU 1013
 
 ;para o upload do arquivo
 ClassName			db 'MCLASS',0
@@ -58,8 +64,10 @@ FileN   			db 260 dup(?)
 .const
 erro db "Erro",0
 erro_ler db "Erro ao ler o arquivo enviado. Verifique se é um arquivo válido",0
+erro_lista db "Erro ao ler lista de produtos",0
 erro_nao_bmp db "Arquivo enviado não é .bmp!",0
 erro_abrir db "Ocorreu um erro ao abrir o arquivo. Tente novamente",0
+erro_adicionar db "Erro ao adicionar produto a lista de itens.",0
 
 ;Leandro
 MEMORYSIZE EQU 65535
